@@ -1,8 +1,9 @@
 module.exports = {
     database: {
-        host: '10.10.10.254',
+        host: '192.168.128.3',
         user: 'calvarez',
         password: 'triplero6',
-        database: 'MiPalestra'
+        database: 'MiPalestra',
+        multipleStatements: true
     }
 };

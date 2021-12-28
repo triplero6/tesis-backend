@@ -29,21 +29,30 @@ passport.use('local.signup', new LocalStrategy({
     passwordField: 'Contrasenia',
     passReqToCallback: true
 }, async (req, username, Contrasenia, done) => {
-    const { Nombre, Apellido, EstadoUsuario, PM, Mail} = req.body;
+    const { Nombre, Apellido, PM, Mail} = req.body;
     const newUser = {
         Nombre,
         Apellido,
-        Contrasenia, 
-        EstadoUsuario,
-        PM, 
+        Contrasenia,
+        PM,
         Mail,
         username
     }
-    console.log(req.body)
-    newUser.Contrasenia = await helpers.encryptPassword(Contrasenia);
-    const result = await pool.query('INSERT INTO Usuarios SET ?', [newUser]);
-    newUser.idUsuario = result.insertId;
-    return done(null, newUser);
+    const Cifrada = await helpers.encryptPassword(Contrasenia);
+    pool.query('CALL MiPalestra.spInsertUser(?,?,?,?,?,?,?,@estado, @out_id); SELECT @estado AS estado; SELECT @out_id AS insertId', [Nombre, Apellido, Cifrada, 0,PM, Mail, username],
+    (err, rows) => {
+        if(err){
+            return done(null, false);
+        }
+        const estado = Object.values(JSON.parse(JSON.stringify(rows)))[1][0].estado;
+        const insertId = Object.values(JSON.parse(JSON.stringify(rows)))[2][0].insertId;
+        if (estado == 0){
+            return done(null, false);
+        } else {
+            newUser.idUsuario = insertId;
+            return done(null, newUser);
+        }
+    })
 }));
 
 passport.serializeUser((user, done) => {

@@ -1,5 +1,4 @@
 const express = require('express');
-const { session } = require('passport');
 const router = express.Router();
 const passport = require('passport');
 
