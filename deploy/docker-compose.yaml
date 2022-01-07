@@ -1,0 +1,54 @@
+version: '3'
+
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    labels:
+        com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+    container_name: nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /data/nginx/conf.d:/etc/nginx/conf.d
+      - /data/nginx/vhost.d:/etc/nginx/vhost.d
+      - /data/nginx/html:/usr/share/nginx/html
+      - /data/nginx/certs:/etc/nginx/certs:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+
+  nginx-letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: nginx-letsencrypt
+    restart: unless-stopped
+    volumes:
+      - /data/nginx/conf.d:/etc/nginx/conf.d
+      - /data/nginx/vhost.d:/etc/nginx/vhost.d
+      - /data/nginx/html:/usr/share/nginx/html
+      - /data/nginx/certs:/etc/nginx/certs:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - NGINX_DOCKER_GEN_CONTAINER=nginx-proxy
+      - NGINX_PROXY_CONTAINER=nginx-proxy
+
+  mailserver:
+    image: poste.io/mailserver:dev
+    container_name: mailserver
+    restart: unless-stopped
+    ports:
+      - "25:25"
+      - "110:110"
+      - "143:143"
+      - "587:587"
+      - "993:993"
+      - "995:995"
+      - "4190:4190"
+    environment:
+      - LETSENCRYPT_EMAIL=info@palestra.com.ar
+      - LETSENCRYPT_HOST=mail.palestra.com.ar
+      - VIRTUAL_HOST=mail.palestra.com.ar
+      - HTTPS=OFF
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /data/nginx/html/.well-known:/opt/www/.well-known
+      - /data/mailserver:/data

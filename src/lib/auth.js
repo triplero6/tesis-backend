@@ -8,7 +8,9 @@ module.exports = {
     },
     
     isNotLoggedIn(req, res, next){
+        console.log(req.isAuthenticated());
         if(!req.isAuthenticated()){
+            console.log("entra aca")
             return next();
         }
         return res.redirect('/');

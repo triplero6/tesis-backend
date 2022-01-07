@@ -7,6 +7,7 @@ const passport = require('passport');
 const session = require('express-session');
 const MySqlStore = require('express-mysql-session');
 const { database } = require('./keys');
+const  flash = require("connect-flash");
 
 //Inicializaciones
 const app = express();
@@ -25,6 +26,7 @@ app.use(session({
 app.use(morgan('dev'));
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
+app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 const storage = multer.diskStorage({
@@ -39,9 +41,9 @@ app.use(multer({
 
 
 //Variables Globales
-app.use((req,res,next) => {
-    next();
-})
+// app.use((req,res,next) => {
+//     next();
+// })
 
 //Rutas
 app.use(require('./routes'));
