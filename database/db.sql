@@ -28,3 +28,22 @@ BEGIN
     UPDATE Usuarios SET Nombre=inNombre, Apellido=inApellido, FotoPerfil=inFotoPerfil, Mail=inMail WHERE idUsuario=inIdUsuario;
 END $$
 DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spSearchByMail(
+    IN inMail VARCHAR(45)
+)
+BEGIN 
+    SELECT idUsuario FROM Usuarios WHERE Mail = inMail;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spChangePassword(
+    IN inIdUsuario INT,
+    IN inNewPassword VARCHAR(200)
+)
+BEGIN 
+    UPDATE Usuarios SET Contrasenia=inNewPassword WHERE idUsuario=inIdUsuario;
+END $$
+DELIMITER;

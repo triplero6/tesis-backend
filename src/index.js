@@ -8,6 +8,7 @@ const session = require('express-session');
 const MySqlStore = require('express-mysql-session');
 const { database } = require('./keys');
 const  flash = require("connect-flash");
+require('dotenv').config();
 
 //Inicializaciones
 const app = express();

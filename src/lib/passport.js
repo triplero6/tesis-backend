@@ -9,13 +9,10 @@ passport.use('local.signin', new LocalStrategy({
     passwordField: 'password',
     passReqToCallback: true
 }, async (req, username, password, done) => {
-    console.log("que onda aca")
     const rows = await pool.query('CALL MiPalestra.spLogIn(?)', [username]);
     if (rows[0].length > 0){
          const user = rows[0][0];
-         console.log(user.Contrasenia)
          const validPassword = await helpers.matchPassword(password, user.Contrasenia);
-         console.log(validPassword)
         if(validPassword){
             done(null, user);
         } else {
@@ -64,8 +61,6 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
     const rows = await pool.query('CALL MiPalestra.spDeserializeUser(?)', [id]);
-    console.log('prueba')
     const user = Object.values(JSON.parse(JSON.stringify(rows)))[0][0];
-    // console.log(user);
     done(null, user);
 })
