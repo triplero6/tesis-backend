@@ -13,10 +13,14 @@ router.get('/signup', (req,res) => {
 });
 
 router.post('/signup', passport.authenticate('local.signup', {
-    successRedirect: '/profile',
+    successRedirect: '/signupsuccess',
     failureRedirect: '/signup',
     failureFlash: true
 }));
+
+router.get('/signupsuccess', (req,res) => {
+    res.send('Registro completado')
+})
 
 router.get('/signin', (req,res) => {
     res.send('Iniciar Sesion')
@@ -24,11 +28,15 @@ router.get('/signin', (req,res) => {
 
 router.post('/signin', isNotLoggedIn, (req,res, next) => {
     passport.authenticate('local.signin', {
-        successRedirect: '/profile',
+        successRedirect: '/signinsuccess',
         failureRedirect: '/signin',
         failureFlash: true
     })(req,res,next);
 });
+
+router.get('/signinsuccess', (req, res) => {
+    res.send('Bienvenido')
+})
 
 router.get('/profile', isLoggedIn, (req, res) => {
     res.send('Profile');

@@ -47,3 +47,24 @@ BEGIN
     UPDATE Usuarios SET Contrasenia=inNewPassword WHERE idUsuario=inIdUsuario;
 END $$
 DELIMITER;
+
+DELIMITER $$
+CREATE PROCEDURE spListUsers()
+BEGIN
+    SELECT idUsuario, Nombre, Apellido FROM Usuarios;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spListEquipos()
+BEGIN
+    SELECT Equipos.idEquipo, Equipos.Descripcion, TipoEquipo.Nombre as Tipo, Equipos.Anio, TipoEquipo.EstadoEquipo FROM Equipos INNER JOIN TipoEquipo WHERE Equipos.idTipoEquipo = TipoEquipo.idTipoEquipo;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spListSolicitudes()
+BEGIN
+    SELECT username, Nombre, Apellido, Mail FROM Usuarios WHERE EstadoUsuario = 0;
+END $$
+DELIMITER ;

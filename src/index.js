@@ -8,6 +8,7 @@ const session = require('express-session');
 const MySqlStore = require('express-mysql-session');
 const { database } = require('./keys');
 const  flash = require("connect-flash");
+const cors = require('cors');
 require('dotenv').config();
 
 //Inicializaciones
@@ -18,6 +19,7 @@ require('./lib/passport');
 app.set('port', process.env.PORT || 4000);
 
 //Middlewares
+app.use(cors());
 app.use(session({
     secret: 'miPalestraSecret',
     resave: false,
@@ -50,6 +52,7 @@ app.use(multer({
 app.use(require('./routes'));
 app.use(require('./routes/authentication'));
 app.use('/users', require('./routes/users'));
+app.use('/equipos', require('./routes/teams'));
 
 //Archivos publicos
 app.use(express.static(path.join(__dirname, 'public')));

@@ -17,4 +17,13 @@ router.post('/edit/', async (req,res) => {
     }
 });
 
+router.get('/solicitudes', async (req, res) => {
+    const rows = await pool.query('CALL MiPalestra.spListSolicitudes()');
+    const solicitudes = Object.values(JSON.parse(JSON.stringify(rows)))[0];
+    console.log(solicitudes);
+
+    res.send(solicitudes);
+})
+
+
 module.exports = router;
