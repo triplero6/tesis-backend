@@ -68,3 +68,38 @@ BEGIN
     SELECT username, Nombre, Apellido, Mail FROM Usuarios WHERE EstadoUsuario = 0;
 END $$
 DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spListUsuarios()
+BEGIN 
+    SELECT Usuarios.Nombre, 
+    Usuarios.Apellido, 
+    Usuarios.username, 
+    Usuarios.Mail, 
+    Usuarios.PM , 
+    Grupos.NombreGrupo, 
+    Usuarios.EstadoUsuario 
+    FROM Usuarios JOIN UsuariosEnGrupos ON Usuarios.idUsuario =  UsuariosEnGrupos.idUsuario
+    JOIN Grupos ON UsuariosEnGrupos.idGrupo = Grupos.idGrupo;
+END $$
+DELIMITER;
+
+DELIMITER $$ 
+CREATE PROCEDURE spListGrupos()
+BEGIN
+    SELECT NombreGrupo, FechaFundacion, Apostolado, Descripcion FROM Grupos;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spAddGroup(
+    IN inidTipoGrupo INT,
+    IN inNombreGrupo VARCHAR(45),
+    IN inFechaFundacion DATETIME,
+    IN inApostolado VARCHAR(45),
+    IN inDescripcion TEXT
+)
+BEGIN
+    INSERT INTO Grupos(idTipoGrupo, NombreGrupo, FechaFundacion, Apostolado, Descripcion) VALUES  inidTipoGrupo, inNombreGrupo, inFechaFundacion, inApostolado, inDescripcion);
+END $$
+DELIMITER ;

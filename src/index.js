@@ -19,11 +19,15 @@ require('./lib/passport');
 app.set('port', process.env.PORT || 4000);
 
 //Middlewares
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000',
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true 
+}));
 app.use(session({
     secret: 'miPalestraSecret',
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
     store: new MySqlStore(database)
 }));
 app.use(morgan('dev'));
@@ -53,6 +57,7 @@ app.use(require('./routes'));
 app.use(require('./routes/authentication'));
 app.use('/users', require('./routes/users'));
 app.use('/equipos', require('./routes/teams'));
+app.use('/grupos', require('./routes/groups'));
 
 //Archivos publicos
 app.use(express.static(path.join(__dirname, 'public')));

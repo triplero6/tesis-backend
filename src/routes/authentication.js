@@ -44,8 +44,23 @@ router.get('/profile', isLoggedIn, (req, res) => {
 
 router.get('/logout', (req, res) => {
     req.logOut();
-    res.redirect('/');
+    res.clearCookie('connect.sid', {
+        path: '/',
+      }).status(200).send('ok');
 });
+
+router.get('/user', (req, res) => {
+    console.log(req.user);
+    console.log(req.session);
+
+    if(req.user){
+        console.log(req.user)
+        res.json(req.user);
+    }
+    else{
+        res.send('no hay sesion iniciada')
+    }
+})
 
 router.put('/forgotpassword', async (req, res) => {
     const { email } = req.body;

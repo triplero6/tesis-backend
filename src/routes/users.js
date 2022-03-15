@@ -25,5 +25,12 @@ router.get('/solicitudes', async (req, res) => {
     res.send(solicitudes);
 })
 
+router.get('/usuarios', async (req, res) => {
+    const rows = await pool.query ('CALL MiPalestra.spListUsuarios()');
+    const usuarios = Object.values(JSON.parse(JSON.stringify(rows)))[0];
+
+    res.send(usuarios);
+})
+
 
 module.exports = router;
