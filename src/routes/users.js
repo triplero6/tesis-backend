@@ -32,5 +32,13 @@ router.get('/usuarios', async (req, res) => {
     res.send(usuarios);
 })
 
+router.put('/disabled', async (req, res) => {
+    const {userId, disabledUser} = req.body;
+    console.log(userId, disabledUser);
+    const rows = await pool.query('CALL MiPalestra.spDisabledUser(?)', [userId]);
+    console.log(rows);
+    res.send('deshabilitado');
+})
+
 
 module.exports = router;

@@ -72,7 +72,8 @@ DELIMITER ;
 DELIMITER $$
 CREATE PROCEDURE spListUsuarios()
 BEGIN 
-    SELECT Usuarios.Nombre, 
+    SELECT Usuarios.idUsuario,
+    Usuarios.Nombre, 
     Usuarios.Apellido, 
     Usuarios.username, 
     Usuarios.Mail, 
@@ -100,6 +101,6 @@ CREATE PROCEDURE spAddGroup(
     IN inDescripcion TEXT
 )
 BEGIN
-    INSERT INTO Grupos(idTipoGrupo, NombreGrupo, FechaFundacion, Apostolado, Descripcion) VALUES  inidTipoGrupo, inNombreGrupo, inFechaFundacion, inApostolado, inDescripcion);
+    INSERT INTO Grupos(idTipoGrupo, NombreGrupo, FechaFundacion, Apostolado, Descripcion) VALUES ( inidTipoGrupo, inNombreGrupo, inFechaFundacion, inApostolado, inDescripcion);
 END $$
 DELIMITER ;
