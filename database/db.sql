@@ -85,6 +85,16 @@ BEGIN
 END $$
 DELIMITER;
 
+DELIMITER $$
+CREATE PROCEDURE spDisabledUser(
+    IN inidUsuario INT
+)
+BEGIN 
+    UPDATE Usuarios SET EstadoUsuario=0 WHERE idUsuario=inidUsuario;
+END $$
+DELIMITER ;
+
+
 DELIMITER $$ 
 CREATE PROCEDURE spListGrupos()
 BEGIN
@@ -102,5 +112,33 @@ CREATE PROCEDURE spAddGroup(
 )
 BEGIN
     INSERT INTO Grupos(idTipoGrupo, NombreGrupo, FechaFundacion, Apostolado, Descripcion) VALUES ( inidTipoGrupo, inNombreGrupo, inFechaFundacion, inApostolado, inDescripcion);
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spAddTeam(
+    IN inidTipoEquipo INT,
+    IN inDescripcion VARCHAR(45),
+    IN inAnio INT,
+    OUT out_param INT
+)
+BEGIN
+    INSERT INTO Equipos(idTipoEquipo, Descripcion, Anio) VALUES ( inidTipoEquipo, inDescripcion, inAnio);
+    SET out_param = LAST_INSERT_ID();
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spAddTeamPM(
+    IN inidEquipo INT,
+    IN inidAsesor INT,
+    IN inNumero INT,
+    IN inLugar VARCHAR(100),
+    IN inNombreCasa VARCHAR(100),
+    IN inidEquipoCocina INT,
+    IN inSexo ENUM('Femenino', 'Masculino')
+)
+BEGIN
+    INSERT INTO EquiposPM(idEquipo, idAsesor, Numero, Lugar, NombreCasa, idEquipoCocina, Sexo) VALUES ( inidEquipo, inidAsesor, inNumero, inLugar, inNombreCasa, inidEquipoCocina, inSexo);
 END $$
 DELIMITER ;
