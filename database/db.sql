@@ -30,6 +30,20 @@ END $$
 DELIMITER ;
 
 DELIMITER $$
+CREATE PROCEDURE spEditGroup(
+    IN inIdGroup INT,
+    IN inNombreGrupo VARCHAR(45),
+    IN inFechaFundacion DATETIME,
+    IN inApostolado VARCHAR(45),
+    IN inDescripcion TEXT,
+    IN inImagen VARCHAR(200)
+)
+BEGIN 
+    UPDATE Grupos SET NombreGrupo=inNombreGrupo, FechaFundacion=inFechaFundacion, Apostolado=inApostolado, Descripcion=inDescripcion, Imagen=inImagen WHERE idGrupo=inIdGroup;
+END $$
+DELIMITER ;
+
+DELIMITER $$
 CREATE PROCEDURE spSearchByMail(
     IN inMail VARCHAR(45)
 )
@@ -112,6 +126,15 @@ CREATE PROCEDURE spAddGroup(
 )
 BEGIN
     INSERT INTO Grupos(idTipoGrupo, NombreGrupo, FechaFundacion, Apostolado, Descripcion) VALUES ( inidTipoGrupo, inNombreGrupo, inFechaFundacion, inApostolado, inDescripcion);
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spDeleteGroup(
+    IN inidGrupo INT
+)
+BEGIN
+    DELETE FROM Grupos WHERE idGrupo = inidGrupo;
 END $$
 DELIMITER ;
 

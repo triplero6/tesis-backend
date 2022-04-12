@@ -11,7 +11,6 @@ router.get('/', async (req,res) => {
 
 router.post('/add', async (req, res) => {
     const { TipoEquipo , Descripcion, Anio, Asesor, Numero, Lugar, NombreCasa, EquipoCocina, Sexo } = req.body;
-    console.log("que onda");
     pool.getConnection(function(err, connection) {
         connection.beginTransaction(function(err) {
             if (err) {                  //Transaction Error (Rollback and release connection)
@@ -37,7 +36,7 @@ router.post('/add', async (req, res) => {
                                         res.send('Algo salio mal')
                                     })
                                 } else {
-                                    connection.commit(function(err){
+                                    connection.commit(function(err){np
                                         if(err){
                                             connection.rollback(function(){
                                                 connection.release();
@@ -68,6 +67,10 @@ router.post('/add', async (req, res) => {
             }    
         });
     });
+
+});
+
+router.put('/edit', (req, res) => {
 
 });
 

@@ -20,7 +20,7 @@ app.set('port', process.env.PORT || 4000);
 
 //Middlewares
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: 'http://palestra.com.ar:3000',
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true 
 }));
@@ -44,7 +44,7 @@ const storage = multer.diskStorage({
 });
 app.use(multer({
     storage,
-}).single('image'));
+}).single('Imagen'));
 
 
 //Variables Globales
