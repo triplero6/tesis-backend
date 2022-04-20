@@ -165,3 +165,23 @@ BEGIN
     INSERT INTO EquiposPM(idEquipo, idAsesor, Numero, Lugar, NombreCasa, idEquipoCocina, Sexo) VALUES ( inidEquipo, inidAsesor, inNumero, inLugar, inNombreCasa, inidEquipoCocina, inSexo);
 END $$
 DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spAddFile(
+    IN inidUsuario INT,
+    IN inNombre VARCHAR(45),
+    IN inTipo VARCHAR(45)
+    IN inExtension VARCHAR(45),
+    IN inNombreSubida VARCHAR(200)
+)
+BEGIN
+    INSERT INTO Archivos(idUsuario, Nombre, Tipo, Extension, NombreSubida) VALUES ( inidUsuario, inNombre, inTipo, inExtension, inNombreSubida);
+END $$
+DELIMITER ;
+
+DELIMITER $$ 
+CREATE PROCEDURE spListArchivos()
+BEGIN
+    SELECT Archivos.Nombre, Archivos.FechaSubida, Archivos.Tipo, Archivos.Extension, Archivos.NombreSubida, CONCAT_WS(', ', Usuarios.Apellido, Usuarios.Nombre) AS 'Usuario' FROM Archivos INNER JOIN Usuarios WHERE Archivos.idUsuario = Usuarios.idUsuario;
+END $$
+DELIMITER ;

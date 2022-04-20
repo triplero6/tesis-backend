@@ -1,9 +1,21 @@
 const express = require('express');
 const moment = require('moment');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const uuid = require('uuid').v4;
 
 const pool = require('../database');
-const { encryptPassword } = require('../lib/helpers');
+
+const storage = multer.diskStorage({
+    destination: path.join(__dirname, 'public/img/uploads'), 
+    filename: (req,file,cb, filename) => {
+        cb(null, uuid() + path.extname(file.originalname));
+    }
+});
+
+
+const upload = multer({ storage }).single('Imagen');
 
 router.get('/', async (req,res) => {
     const rows = await pool.query('CALL MiPalestra.spListGrupos()');
@@ -35,7 +47,7 @@ router.put('/delete', async (req, res) => {
     res.send('Grupo eliminado satisfactoriamente')
 });
 
-router.put('/edit', async (req, res) => {
+router.put('/edit', upload, async (req, res) => {
     const { idUsuario, NombreGrupo, FechaFundacion, Apostolado, Descripcion} = req.body;
     const  Imagen = req.file.filename;
     console.log(Imagen)

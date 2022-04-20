@@ -42,11 +42,8 @@ const storage = multer.diskStorage({
         cb(null, uuid() + path.extname(file.originalname));
     }
 });
-app.use(multer({
-    storage,
-}).single('Imagen'));
 
-
+exports.storage = storage;
 //Variables Globales
 // app.use((req,res,next) => {
 //     next();
@@ -58,6 +55,7 @@ app.use(require('./routes/authentication'));
 app.use('/users', require('./routes/users'));
 app.use('/equipos', require('./routes/teams'));
 app.use('/grupos', require('./routes/groups'));
+app.use('/files', require('./routes/files'))
 
 //Archivos publicos
 app.use(express.static(path.join(__dirname, 'public')));
