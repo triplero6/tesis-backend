@@ -4,9 +4,10 @@ const multer = require('multer');
 const path = require('path');
 const uuid = require('uuid').v4;
 const pool = require('../database');
+const fs = require('fs');
 
 const storage = multer.diskStorage({
-    destination: path.join(__dirname, 'public/img/uploads'), 
+    destination: path.join(__dirname, '../public/img/uploads'), 
     filename: (req,file,cb, filename) => {
         cb(null, uuid() + path.extname(file.originalname));
     }
@@ -41,6 +42,20 @@ router.post('/add', upload, async (req, res) => {
         
         res.send('Error al subir el archivo');
     }
+});
+
+router.put('/delete', async (req, res) => {
+    const { idArchivo, NombreSubida} = req.body;
+    try{
+        pool.query('CALL MiPalestra.spDeleteArchivos(?)', [idArchivo]);
+        fs.unlinkSync(path.join(__dirname, '../public/img/uploads', NombreSubida))
+        console.log(path.join(__dirname, '../public/img/uploads', NombreSubida));
+        res.send("Archivo borrado satisfactoriamente");
+    } catch(err){
+        console.error(err);
+        res.send("Error al borrar el archivo");
+    }
+    
 });
 
 module.exports = router;

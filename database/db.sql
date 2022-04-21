@@ -185,3 +185,12 @@ BEGIN
     SELECT Archivos.Nombre, Archivos.FechaSubida, Archivos.Tipo, Archivos.Extension, Archivos.NombreSubida, CONCAT_WS(', ', Usuarios.Apellido, Usuarios.Nombre) AS 'Usuario' FROM Archivos INNER JOIN Usuarios WHERE Archivos.idUsuario = Usuarios.idUsuario;
 END $$
 DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spDeleteArchivos(
+    IN inidArchivo INT
+)
+BEGIN
+    DELETE FROM Archivos WHERE idArchivo = inidArchivo;
+END $$
+DELIMITER ;
