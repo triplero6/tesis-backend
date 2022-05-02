@@ -44,6 +44,16 @@ END $$
 DELIMITER ;
 
 DELIMITER $$
+CREATE PROCEDURE spEditUserPhoto(
+    IN inidUsuario INT,
+    IN inFotoPerfil VARCHAR(200)
+)
+BEGIN
+    UPDATE Usuarios SET FotoPerfil=inFotoPerfil WHERE idUsuario=inidUsuario;
+END $$
+DELIMITER ;
+
+DELIMITER $$
 CREATE PROCEDURE spSearchByMail(
     IN inMail VARCHAR(45)
 )
@@ -61,6 +71,15 @@ BEGIN
     UPDATE Usuarios SET Contrasenia=inNewPassword WHERE idUsuario=inIdUsuario;
 END $$
 DELIMITER;
+
+DELIMITER $$
+CREATE PROCEDURE spUserPassword(
+    IN inidUsuario  INT
+)
+BEGIN
+    SELECT Contrasenia FROM Usuarios WHERE idUsuario = inidUsuario;
+END $$
+DELIMITER ;
 
 DELIMITER $$
 CREATE PROCEDURE spListUsers()
@@ -104,7 +123,7 @@ CREATE PROCEDURE spDisabledUser(
     IN inidUsuario INT
 )
 BEGIN 
-    UPDATE Usuarios SET EstadoUsuario=0 WHERE idUsuario=inidUsuario;
+    UPDATE Usuarios SET EstadoUsuario=2 WHERE idUsuario=inidUsuario;
 END $$
 DELIMITER ;
 
@@ -194,3 +213,30 @@ BEGIN
     DELETE FROM Archivos WHERE idArchivo = inidArchivo;
 END $$
 DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spEnabledUser(
+    IN inidUsuario INT
+)
+BEGIN
+    UPDATE Usuarios SET EstadoUsuario=1 WHERE idUsuario=inidUsuario;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spUserProfile(
+    IN inidUsuario INT
+)
+BEGIN 
+    SELECT Usuarios.idUsuario,
+    Usuarios.Nombre, 
+    Usuarios.Apellido, 
+    Usuarios.username, 
+    Usuarios.Mail, 
+    Usuarios.PM , 
+    Grupos.NombreGrupo
+    FROM Usuarios JOIN UsuariosEnGrupos ON Usuarios.idUsuario =  UsuariosEnGrupos.idUsuario
+    JOIN Grupos ON UsuariosEnGrupos.idGrupo = Grupos.idGrupo WHERE Usuarios.idUsuario = inidUsuario;
+END $$
+DELIMITER;
+
