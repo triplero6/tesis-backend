@@ -10,7 +10,6 @@ const { database } = require('./keys');
 const  flash = require("connect-flash");
 const cors = require('cors');
 require('dotenv').config();
-
 //Inicializaciones
 const app = express();
 require('./lib/passport');
@@ -55,7 +54,9 @@ app.use(require('./routes/authentication'));
 app.use('/users', require('./routes/users'));
 app.use('/equipos', require('./routes/teams'));
 app.use('/grupos', require('./routes/groups'));
-app.use('/files', require('./routes/files'))
+app.use('/files', require('./routes/files'));
+app.use('/publications', require('./routes/publications'));
+app.use('/comments', require('./routes/comments'))
 
 //Archivos publicos
 app.use(express.static(path.join(__dirname, 'public')));
