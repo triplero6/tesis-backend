@@ -571,3 +571,14 @@ BEGIN
     JOIN TipoEquipo te ON e.idTipoEquipo = te.idTipoEquipo WHERE ue.idUsuario = inidUsuario; 
 END $$
 DELIMITER;
+
+DELIMITER $$
+CREATE PROCEDURE spGetTeamMembers(
+    IN  inidEquipo INT
+)
+BEGIN
+    SELECT u.idUsuario, e.idEquipo, concat_ws(', ', u.Apellido, u.Nombre) AS Dirigente,  ue.Rol 
+    FROM Equipos e JOIN UsuariosEnEquipos ue ON e.idEquipo = ue.idEquipo JOIN Usuarios u ON u.idUsuario = ue.idUsuario
+    WHERE e.idEquipo = inidEquipo;
+END $$
+DELIMITER ;

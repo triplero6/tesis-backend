@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
-
+const moment = require('moment');
 
 
 const helpers = {};
@@ -18,6 +18,14 @@ helpers.matchPassword = async (password, savedPassword) => {
         console.log(e);
     }
 };
+
+helpers.formatSQL = (date) => {
+    const fechaformat = moment(
+        date,
+        "YYYY-MM-DDTHH:mm:ss"
+    );
+    return newdate = fechaformat.format("YYYY-MM-DD");
+}
 
 helpers.sendWelcomeMail = async (mail) => {
 

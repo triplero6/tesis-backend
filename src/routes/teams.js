@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const pool = require('../database');
+const helpers = require('../lib/helpers');
 
 router.get('/', async (req,res) => {
     const rows = await pool.query('CALL MiPalestra.spListEquipos()');
@@ -10,8 +11,9 @@ router.get('/', async (req,res) => {
 });
 
 router.post('/add', async (req, res) => {
-    const { TipoEquipo , Descripcion, Anio, Asesor, Numero, Lugar, NombreCasa, EquipoCocina, Sexo } = req.body;
-    console.log(req.body)
+    const { TipoEquipo , Descripcion, Anio, FechaDesde, FechaHasta, Asesor, Numero, Lugar, NombreCasa, EquipoCocina, Sexo } = req.body;
+    const newFechaDesde = helpers.formatSQL(FechaDesde);
+    const newFechaHasta = helpers.formatSQL(FechaHasta);
     pool.getConnection(function(err, connection) {
         connection.beginTransaction(function(err) {
             if (err) {                  //Transaction Error (Rollback and release connection)
@@ -20,7 +22,7 @@ router.post('/add', async (req, res) => {
                     //Failure
                 });
             } else {
-                connection.query('CALL MiPalestra.spAddTeam(?,?,?, @out_param); SELECT @out_param AS lastId', [TipoEquipo, Descripcion, Anio], function(err, results) {
+                connection.query('CALL MiPalestra.spAddTeam(?,?,?,?,?, @out_param); SELECT @out_param AS lastId', [TipoEquipo, Descripcion, Anio, newFechaDesde, newFechaHasta], function(err, results) {
                     if (err) {          //Query Error (Rollback and release connection)
                         connection.rollback(function() {
                             connection.release();
@@ -73,12 +75,15 @@ router.post('/add', async (req, res) => {
 });
 
 router.put('/edit', async (req, res) => {
-    const {idEquipo, idTipoEquipo, Descripcion, Lugar, Casa, Integrantes} = req.body;
+    const {idEquipo, idTipoEquipo, Descripcion, Lugar, NombreCasa, dirigente, idAsesor, FechaDesde, FechaHasta} = req.body;
+    const newFechaDesde = helpers.formatSQL(FechaDesde);
+    const newFechaHasta = helpers.formatSQL(FechaHasta);
     pool.getConnection(function(err, connection){
         connection.beginTransaction(function(err){
             if(err){
                 connection.rollback(function(){
                     connection.release();
+                    console.log('Err2: ', err);
                 });
             } else {
                 connection.query('CALL MiPalestra.spEditTeam(?, ?)', [idEquipo, Descripcion],
@@ -86,15 +91,27 @@ router.put('/edit', async (req, res) => {
                     if(err){
                         connection.rollback(function(){
                             connection.release();
-                            console.error(err);
+                            console.log('Err1: ', err);
+
                         })
                     } else{
+                        //connection.query('CALL MiPalestra.spDeleteUsersTeams(?)', [idEquipo],
+                        //function(err, results){
+                        //    if(err){
+                        //        connection.rollback(function(){
+                        //            
+                        //        })
+                        //    }
+                        //})
+                        
                         if( idTipoEquipo !== 1){
+                           
                             connection.commit(function(err){
                                 if(err){
                                     connection.rollback(function(){
                                         connection.release();
                                         res.send('Error al editar equipo');
+                                        console.log('Err2: ',err);
                                     })
                                 }else{
                                     connection.release();
@@ -102,38 +119,53 @@ router.put('/edit', async (req, res) => {
                                 }
                             })
                         } else{
-                            connection.query('CALL MiPalestra.spEditTeamPM(?,?,?)', [idEquipo, Lugar, Casa], 
+                            console.log('llega aca 2')
+                            connection.query('CALL MiPalestra.spEditTeamPM(?,?,?,?)', [idEquipo, Lugar, NombreCasa, idAsesor], 
                             function(err, results){
                                 if(err){
                                     connection.rollback(function(){
                                         connection.release();
                                         res.send('Error al editar equipo');
+                                        console.log('Err3: ',err);
                                     })
                                 }else{
+                                    console.log('llega aca 3')
                                     connection.query('CALL MiPalestra.spDeleteUsersTeams(?)', [idEquipo],
                                     function(err, results){
                                         if(err){
                                             connection.rollback(function(){
                                                 connection.release();
                                                 res.send('Error al editar equipo');
+                                                console.log('Err4: ',err);
                                             })
                                         }else{
-                                            Integrantes.map((integrante) => {
-                                                connection.query('CALL MiPalestra.spAddUserInTeam(?,?,?)', [integrante.idUsuario, integrante.idEquipo, integrante.Rol],
+                                            console.log('llega aca 4')
+                                            var query = '';
+                                            var variables = []
+                                            dirigente.map((integrante) => {
+                                                query += `CALL MiPalestra.spAddUserInTeam(?,?,?,?,?);`
+                                                variables.push(integrante.idUsuario, idEquipo, integrante.rol, newFechaDesde, newFechaHasta);
+                                            })
+                                            console.log(query, variables)
+                                            
+                                                connection.query(query, variables,
                                                 function(err, results){
                                                     if(err){
+                                                        console.log('llega aca 5', err)
                                                         connection.rollback(function(){
                                                             connection.release();
                                                             res.send('Error al editar equipo');
+                                                            console.log('Err5: ', err);
                                                         })
                                                     }
                                                 })
-                                            });
+
                                             connection.commit(function(err){
                                                 if(err){
                                                     connection.rollback(function(){
                                                         connection.release();
                                                         res.send('Error al editar el equipo');
+                                                        console.log('Err6: ',err);
                                                     });
                                                 }else {
                                                     connection.release();
@@ -244,7 +276,9 @@ router.get('/edit/:id', async (req, res) => {
     try{
         const row = await pool.query('CALL MiPalestra.spGetEditTeam(?)', [idEquipo]);
         const equipo = Object.values(JSON.parse(JSON.stringify(row)))[0][0];
-        res.send(equipo);
+        const row1 = await pool.query('CALL MiPalestra.spGetTeamMembers(?)', [idEquipo]);
+        const miembros = Object.values(JSON.parse(JSON.stringify(row1)))[0];
+        res.send([equipo, miembros]);
     } catch(err){
         console.error(err);
     }
@@ -256,7 +290,9 @@ router.get('/editpm/:id', async (req, res) => {
     try{
         const row = await pool.query('CALL MiPalestra.spGetEditTeamPM(?)', [idEquipo]);
         const equipo = Object.values(JSON.parse(JSON.stringify(row)))[0][0];
-        res.send(equipo);
+        const row1 = await pool.query('CALL MiPalestra.spGetTeamMembers(?)', [idEquipo]);
+        const miembros = Object.values(JSON.parse(JSON.stringify(row1)))[0];
+        res.send([equipo, miembros]);
     } catch(err){
         console.error(err);
     }
