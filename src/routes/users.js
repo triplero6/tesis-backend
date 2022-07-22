@@ -45,6 +45,13 @@ router.put('/editphoto', upload, async(req, res) => {
 
 })
 
+//router.put('/edit/comision/:id', async (req, res) => {
+//    const idUsuario = req.params.id;
+//    try{
+//        await pool.query()
+//    }
+//})
+
 router.get('/solicitudes', async (req, res) => {
     const rows = await pool.query('CALL MiPalestra.spListSolicitudes()');
     const solicitudes = Object.values(JSON.parse(JSON.stringify(rows)))[0];
@@ -94,6 +101,18 @@ router.get('/profile/:id', async (req, res) => {
         res.send('Error al cargar el usuario');
     }
 });
+
+router.get('/profile/comision/:id', async (req, res) => {
+    const idUsuario = req.params.id;
+    try{
+        const row = await pool.query('CALL MiPalestra.spUserComision(?)', [idUsuario]);
+        const comision = Object.values(JSON.parse(JSON.stringify(row)))[0][0];
+        res.send(comision)
+    }catch(err) {
+        console.error(err);
+        res.send('Error al cargar la comision')
+    }
+})
 
 router.put('/password', async (req, res) => {
     const {oldPassword, newPassword, idUsuario} = req.body

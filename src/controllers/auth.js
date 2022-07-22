@@ -45,10 +45,11 @@ exports.registerController = async (req, res) => {
                       })
                   } else{
                     const insertId =  Object.values(JSON.parse(JSON.stringify(rows)))[2][0].insertId;
-                    connection.query('CALL MiPalestra.spUserInGroup(?,?)', 
-                    [insertId, Comunidad],
+                    connection.query("CALL MiPalestra.spUserInGroup(?,?);CALL MiPalestra.spUserInGroup(?,'Palestra');", 
+                    [insertId, Comunidad, insertId],
                     function(err, rows){
                       if(err){
+                        console.log('llega aca 1', err)
                         connection.rollback(function(){
                           connection.release();
                           return res.status(400).json({
@@ -58,6 +59,7 @@ exports.registerController = async (req, res) => {
                       } else {
                         connection.commit(function(err){
                           if(err){
+                            console.log('llega aca 2')
                             connection.rollback(function(){
                               connection.release();
                               return res.status(400).json({
@@ -134,6 +136,7 @@ exports.activationController = (req, res) => {
 
 exports.signinController = async (req, res) => {
   const { username, password } = req.body;
+  console.log(username, password)
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const firstError = errors.array().map(error => error.msg)[0];
@@ -147,12 +150,25 @@ exports.signinController = async (req, res) => {
       if(rows[0].length > 0){
           const user = rows[0][0];
           console.log(user)
-          const validPassword = await helpers.matchPassword(password, user.Contrasenia);          
+          const validPassword = await helpers.matchPassword(password, user.Contrasenia); 
+          console.log(validPassword)         
           if(validPassword){
             const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET, { expiresIn: '7d'});
             const { idUsuario, Nombre, Apellido, FotoPerfil, Rol } = user;
+            const rows1 = await pool.query('CALL MiPalestra.spLogInComunidad(?)', [idUsuario]);
+            const comunidad = rows1[0][0];
+            const idComunidad = comunidad.idGrupo;
+            const NombreComunidad = comunidad.NombreGrupo;
+            const rows2 = await pool.query('CALL MiPalestra.spLogInComision(?)', [idUsuario]);
+            const comision = rows2[0][0];
+            if(comision){
+              const idComision = comision.idGrupo;
+              const NombreComision = comision.NombreGrupo;
+              return res.json({token, user: { idUsuario, Nombre, Apellido, FotoPerfil, Rol}, comunidad: {idComunidad, NombreComunidad}, comision: {idComision, NombreComision}});
+            }else{
+              return res.json({token, user: { idUsuario, Nombre, Apellido, FotoPerfil, Rol}, comunidad: {idComunidad, NombreComunidad}, comision: {idComision: 0, NombreComision: 'Sin comision'}});
+            }
     
-            return res.json({token, user: { idUsuario, Nombre, Apellido, FotoPerfil, Rol}});
           }else {
             return res.status(400).json({
             errors: 'El usuario o la contraseña no coincide'

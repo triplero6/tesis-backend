@@ -22,6 +22,19 @@ router.get('/', async (req,res) => {
     res.send(publicaciones);
 });
 
+router.get('/grupo/:id', async (req, res) => {
+    const  idGrupo = req.params.id;
+    console.log(idGrupo)
+    try{
+        const rows = await pool.query('CALL MiPalestra.spPublicacionesComunidad(?)', [idGrupo]);
+        const publicaciones = Object.values(JSON.parse(JSON.stringify(rows)))[0];
+    res.send(publicaciones);
+    } catch (err){
+        console.log(err);
+        res.send('Error al cargar las publicaciones');
+    }
+})
+
 router.get('/movimiento', async (req, res) => {
     const rows = await pool.query('CALL MiPalestra.spPublicacionesMovimiento()');
     const publicaciones = Object.values(JSON.parse(JSON.stringify(rows)))[0];
@@ -30,6 +43,7 @@ router.get('/movimiento', async (req, res) => {
 
 router.get('/home', async (req, res) => {
     const rows = await pool.query('CALL MiPalestra.spListHomeNovedades()');
+    console.log('hola', rows)
     const publicaciones = Object.values(JSON.parse(JSON.stringify(rows)))[0];
     res.send(publicaciones);
 });
@@ -56,8 +70,8 @@ router.post('/add', async (req, res) => {
     );
     let newFechaPublicacion = date.format("YYYY-MM-DD HH:mm:ss");
      try {
-         const rows = await pool.query('CALL MiPalestra.spAddPublicacion(?,?,?,?,?,?,?,?)', [idGrupo, idUsuario, Titulo, Cuerpo, EstadoPublicacion, newFechaPublicacion, Tipo, Destino]);
-         res.send('Publicacion agregada para revision');
+        await pool.query('CALL MiPalestra.spAddPublicacion(?,?,?,?,?,?,?,?)', [idGrupo, idUsuario, Titulo, Cuerpo, EstadoPublicacion, newFechaPublicacion, Tipo, Destino]);
+        res.send('Publicacion agregada para revision');
      } catch (err){
          console.error('Error al cargar la publicacion: ', err);
      }

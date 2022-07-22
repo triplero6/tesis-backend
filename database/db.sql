@@ -582,3 +582,170 @@ BEGIN
     WHERE e.idEquipo = inidEquipo;
 END $$
 DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spEditTeamPM(
+    IN inidEquipo INT,
+    IN inLugar VARCHAR(100),
+    IN inNombreCasa VARCHAR(100),
+    IN inidAsesor INT
+)
+BEGIN 
+    UPDATE EquipoPM SET Lugar = inLugar, NombreCasa = inNombreCasa, idAsesor = inidAsesor;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spEditTeam(
+    IN inidEquipo INT,
+    IN inDescripcion TEXT
+)
+BEGIN
+    UPDATE Equipos SET Descripcion = inDescripcion WHERE idEquipo = inidEquipo;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spAddUserInTeam(
+    IN inidUsuario INT,
+    IN inidEquipo INT,
+    IN inRol ENUM('Consejero','Director','Asistente Tecnico','Asesor','Encargado','Integrante'),
+    IN inFechaDesde DATE,
+    IN inFechaHasta DATE
+)
+BEGIN
+    INSERT INTO UsuariosEnEquipos(idUsuario, idEquipo, Rol, FechaDesde, FechaHasta) VALUES ( inidUsuario, inidEquipo, inRol, inFechaDesde, inFechaHasta);
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spSelectEditTeam(
+    IN inidEquipo INT
+)
+BEGIN
+    SELECT Usuarios.idUsuario,
+    Usuarios.Nombre, 
+    Usuarios.Apellido, 
+    Usuarios.username, 
+    Usuarios.Mail, 
+    Usuarios.PM , 
+    Equipos.idEquipo, 
+    Usuarios.EstadoUsuario 
+    FROM Usuarios LEFT JOIN UsuariosEnEquipos ON Usuarios.idUsuario =  UsuariosEnEquipos.idUsuario
+    LEFT JOIN Equipos ON UsuariosEnEquipos.idEquipo = Equipos.idEquipo WHERE Equipos.idEquipo != inidEquipo;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spListComisiones()
+BEGIN 
+    SELECT g.idGrupo, g.NombreGrupo FROM Grupos g JOIN TipoGrupos tg ON g.idTipoGrupo = tg.idTipoGrupo WHERE tg.idTipoGrupo = 4;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spUserComision(
+    IN inidUsuario INT
+)
+BEGIN
+    SELECT g.NombreGrupo FROM Usuarios u JOIN UsuariosEnGrupos ue ON u.idUsuario = ue.idUsuario 
+    JOIN Grupos g ON ue.idGrupo = g.idGrupo JOIN TipoGrupos tg ON g.idTipoGrupo = tg.idTipoGrupo  
+    WHERE ue.idGrupo != 1 AND tg.idTipoGrupo = 4 AND u.idUsuario = inidUsuario;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spAddComision(
+    IN inidUsuario INT,
+    IN inidComision INT,
+    IN inRol ENUM('Coordinador', 
+    'Vocal FE', 
+    'Vocal Proceso Educativo',
+    'Vocal Pastoral', 
+    'Vocal Retaguardia', 
+    'Vocal Etapa Joven', 
+    'Vocal Etapa Joven Adulto y Adulto', 
+    'Asesor Espiritual', 
+    'Asesor Laico', 
+    'Integrante')
+)
+BEGIN
+    INSERT INTO UsuariosEnGrupos (idGrupo, idUsuario, Rol, FechaDesde) VALUES (inidComision, inidUsuario, inRol, CURDATE());
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spDeleteComision(
+    IN inidUsuario INT,
+    IN inidComision INT
+)
+BEGIN DELETE FROM UsuariosEnGrupos ug JOIN Grupos g WHERE ug.idUsuario = inidUsuario AND FechaHasta IS NULL AND ug.idGrupo = inidComision;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spEndComision(
+    IN inidUsuario INT,
+    IN inidComision INT
+)
+BEGIN
+    UPDATE UsuariosEnGrupos ug SET FechaHasta = CURDATE() WHERE ug.idUsuario = inidUsuario AND FechaHasta IS NULL AND ug.idGrupo = inidComision;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spPublicacionesComunidad(
+    IN inidGrupo INT
+)
+BEGIN 
+    SELECT Publicaciones.idPublicacion,
+    Publicaciones.idGrupo,
+    Publicaciones.Destino, 
+    Publicaciones.Titulo, 
+    Publicaciones.Cuerpo, 
+    Publicaciones.FechaPublicacion, 
+    Publicaciones.EstadoPublicacion, 
+    CONCAT_WS(', ', Usuarios.Apellido, Usuarios.Nombre) AS 'Redactado' 
+    FROM Publicaciones JOIN Usuarios ON Publicaciones.idUsuario = Usuarios.idUsuario WHERE Publicaciones.idGrupo = inidGrupo;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spLogInComunidad(
+    IN inidUsuario INT
+)
+BEGIN
+SELECT g.idGrupo, g.NombreGrupo FROM Usuarios u JOIN UsuariosEnGrupos ug ON u.idUsuario = ug.idUsuario JOIN Grupos g ON ug.idGrupo = g.idGrupo 
+WHERE (g.idTipoGrupo = 1 OR g.idTipoGrupo = 2 OR g.idTipoGrupo = 3) AND ug.FechaHasta IS NULL AND u.idUsuario = inidUsuario;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spLogInComision(
+    IN inidUsuario INT
+)
+BEGIN
+SELECT g.idGrupo, g.NombreGrupo FROM Usuarios u JOIN UsuariosEnGrupos ug ON u.idUsuario = ug.idUsuario JOIN Grupos g ON ug.idGrupo = g.idGrupo 
+WHERE g.idTipoGrupo = 4 AND ug.FechaHasta IS NULL AND u.idUsuario = inidUsuario;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spAddComment(
+    IN inidUsuario INT,
+    IN inidPublicacion INT, 
+    IN inContenido TEXT
+)
+BEGIN
+    INSERT INTO Comentarios (idUsuario, idPublicacion, Contenido) VALUES (inidUsuario, inidPublicacion, inContenido);
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spDeleteComment(
+    IN inidComentario INT
+)
+BEGIN
+    DELETE FROM Comentarios WHERE idComentario = inidComentario;
+END $$
+DELIMITER ;

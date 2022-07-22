@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const pool = require('../database');
+const { resetPasswordMail } = require('../lib/helpers');
 const helpers = require('../lib/helpers');
 
 router.get('/', async (req,res) => {
@@ -95,14 +96,34 @@ router.put('/edit', async (req, res) => {
 
                         })
                     } else{
-                        //connection.query('CALL MiPalestra.spDeleteUsersTeams(?)', [idEquipo],
-                        //function(err, results){
-                        //    if(err){
-                        //        connection.rollback(function(){
-                        //            
-                        //        })
-                        //    }
-                        //})
+                        connection.query('CALL MiPalestra.spDeleteUsersTeams(?)', [idEquipo],
+                        function(err, results){
+                            if(err){
+                                connection.rollback(function(){
+                                    connection.release();
+                                    res.send('Error al editar el equipo');
+                                })
+                            } else{
+                                var query = '';
+                                var variables = [];
+
+                                dirigente.map((integrante) => {
+                                    query += `CALL MiPalestra.spAddUserInTeam(?,?,?,?,?);`
+                                    variables.push(integrante.idUsuario, idEquipo, integrante.rol, newFechaDesde, newFechaHasta);
+                                })
+                                console.log(query, variables)
+                                connection.query(query, variables,
+                                    function(err, results){
+                                        if(err){
+                                            console.log(err)
+                                            connection.rollback(function(){
+                                                connection.release();
+                                                res.send('Error al editar el equipo');
+                                            })
+                                        }
+                                    })
+                            }
+                        })
                         
                         if( idTipoEquipo !== 1){
                            
@@ -119,7 +140,6 @@ router.put('/edit', async (req, res) => {
                                 }
                             })
                         } else{
-                            console.log('llega aca 2')
                             connection.query('CALL MiPalestra.spEditTeamPM(?,?,?,?)', [idEquipo, Lugar, NombreCasa, idAsesor], 
                             function(err, results){
                                 if(err){
@@ -129,51 +149,18 @@ router.put('/edit', async (req, res) => {
                                         console.log('Err3: ',err);
                                     })
                                 }else{
-                                    console.log('llega aca 3')
-                                    connection.query('CALL MiPalestra.spDeleteUsersTeams(?)', [idEquipo],
-                                    function(err, results){
+                                    connection.commit(function(err){
                                         if(err){
                                             connection.rollback(function(){
                                                 connection.release();
                                                 res.send('Error al editar equipo');
-                                                console.log('Err4: ',err);
                                             })
                                         }else{
-                                            console.log('llega aca 4')
-                                            var query = '';
-                                            var variables = []
-                                            dirigente.map((integrante) => {
-                                                query += `CALL MiPalestra.spAddUserInTeam(?,?,?,?,?);`
-                                                variables.push(integrante.idUsuario, idEquipo, integrante.rol, newFechaDesde, newFechaHasta);
-                                            })
-                                            console.log(query, variables)
-                                            
-                                                connection.query(query, variables,
-                                                function(err, results){
-                                                    if(err){
-                                                        console.log('llega aca 5', err)
-                                                        connection.rollback(function(){
-                                                            connection.release();
-                                                            res.send('Error al editar equipo');
-                                                            console.log('Err5: ', err);
-                                                        })
-                                                    }
-                                                })
-
-                                            connection.commit(function(err){
-                                                if(err){
-                                                    connection.rollback(function(){
-                                                        connection.release();
-                                                        res.send('Error al editar el equipo');
-                                                        console.log('Err6: ',err);
-                                                    });
-                                                }else {
-                                                    connection.release();
-                                                    res.send('Equipo editado correctamente');
-                                                }
-                                            })
+                                            connection.release();
+                                            res.send('Equipo editado correctamente');
                                         }
                                     })
+                                
                                 }
                             })
                         }
@@ -264,6 +251,7 @@ router.put('/delete', async (req, res) => {
     });
 });
 
+
 router.get('/asesores', async (req, res) => {
     const rows = await pool.query('CALL MiPalestra.spListAsesores()');
     const asesores = Object.values(JSON.parse(JSON.stringify(rows)))[0];
@@ -297,6 +285,17 @@ router.get('/editpm/:id', async (req, res) => {
         console.error(err);
     }
     
+})
+
+router.get('/select/:id', async (req, res) => {
+    const idEquipo = req.params.id;
+    try{
+        const row = await pool.query('CALL MiPalestra.spSelectEditTeam(?)', [idEquipo]);
+        const equipos = Object.values(JSON.parse(JSON.stringify(row)))[0];
+        res.send(equipos);w
+    }catch (err){
+        console.log(err);
+    }
 })
 
 module.exports = router;
