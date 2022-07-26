@@ -749,3 +749,47 @@ BEGIN
     DELETE FROM Comentarios WHERE idComentario = inidComentario;
 END $$
 DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spEditPublicacion(
+    IN inidPublicacion INT,
+    IN inTitulo VARCHAR(120),
+    IN inCuerpo TEXT
+)
+BEGIN
+    UPDATE Publicaciones SET Titulo = inTitulo, Cuerpo = inCuerpo 
+    WHERE idPublicacion = inidPublicacion;
+END $$
+DELIMITER ; 
+
+DELIMITER $$
+CREATE PROCEDURE spGetEditPublicacion(
+    IN inidPublicacion INT
+)
+BEGIN
+    SELECT Titulo, Cuerpo FROM Publicaciones WHERE idPublicacion = inidPublicacion;
+END $$
+DELIMITER ;
+
+
+DELIMITER $$
+CREATE PROCEDURE spGetEditGrupo(
+    IN inidGrupo INT
+)
+BEGIN
+    SELECT NombreGrupo, FechaFundacion, Apostolado, Descripcion FROM Grupo WHERE idGrupo = inidGrupo;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spEditGrupo(
+    IN inidGrupo INT,
+    IN inidTipoGrupo INT,
+    IN inApostolado VARCHAR (200),
+    IN inDescripcion TEXT,
+    IN inImagen VARCHAR(200)
+)
+    UPDATE Grupos SET idTipoGrupo = inidTipoGrupo, Apostolado = inApostolado,
+    Descripcion = inDescripcion, Imagen = inImagen;
+END $$
+DELIMITER ;

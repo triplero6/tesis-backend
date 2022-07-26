@@ -178,7 +178,106 @@ router.get('/groupsroles/:id', async (req, res) => {
         console.error(e);
         res.send('Error al cargar roles de grupo');
     }
-})
+});
+
+//router.post('/add', async (req, res) => {
+//    const {Nombre, Apellido, Mail, username, idGrupo} = req.body;
+//    try{
+//        pool.getConnection(function(err, connection){
+//            connection.beginTransaction(function(err){
+//                if(err){
+//                    connection.rollback(function(){
+//                        connection.release();
+//                    });
+//                } else {
+//                    connection.query('CALL MiPalestra.spAddUser(?,?,?,?)', [idEquipo, Descripcion],
+//                    function(err, results){
+//                        if(err){
+//                            connection.rollback(function(){
+//                                connection.release();
+//                                console.log('Err1: ', err);
+//    
+//                            })
+//                        } else{
+//                            connection.query('CALL MiPalestra.spDeleteUsersTeams(?)', [idEquipo],
+//                            function(err, results){
+//                                if(err){
+//                                    connection.rollback(function(){
+//                                        connection.release();
+//                                        res.send('Error al editar el equipo');
+//                                    })
+//                                } else{
+//                                    var query = '';
+//                                    var variables = [];
+//    
+//                                    dirigente.map((integrante) => {
+//                                        query += `CALL MiPalestra.spAddUserInTeam(?,?,?,?,?);`
+//                                        variables.push(integrante.idUsuario, idEquipo, integrante.rol, newFechaDesde, newFechaHasta);
+//                                    })
+//                                    console.log(query, variables)
+//                                    connection.query(query, variables,
+//                                        function(err, results){
+//                                            if(err){
+//                                                console.log(err)
+//                                                connection.rollback(function(){
+//                                                    connection.release();
+//                                                    res.send('Error al editar el equipo');
+//                                                })
+//                                            }
+//                                        })
+//                                }
+//                            })
+//                            
+//                            if( idTipoEquipo !== 1){
+//                               
+//                                connection.commit(function(err){
+//                                    if(err){
+//                                        connection.rollback(function(){
+//                                            connection.release();
+//                                            res.send('Error al editar equipo');
+//                                            console.log('Err2: ',err);
+//                                        })
+//                                    }else{
+//                                        connection.release();
+//                                        res.send('Equipo editado correctamente');
+//                                    }
+//                                })
+//                            } else{
+//                                connection.query('CALL MiPalestra.spEditTeamPM(?,?,?,?)', [idEquipo, Lugar, NombreCasa, idAsesor], 
+//                                function(err, results){
+//                                    if(err){
+//                                        connection.rollback(function(){
+//                                            connection.release();
+//                                            res.send('Error al editar equipo');
+//                                            console.log('Err3: ',err);
+//                                        })
+//                                    }else{
+//                                        connection.commit(function(err){
+//                                            if(err){
+//                                                connection.rollback(function(){
+//                                                    connection.release();
+//                                                    res.send('Error al editar equipo');
+//                                                })
+//                                            }else{
+//                                                connection.release();
+//                                                res.send('Equipo editado correctamente');
+//                                            }
+//                                        })
+//                                    
+//                                    }
+//                                })
+//                            }
+//                        }
+//                    });
+//                }
+//            })
+//        })
+//    });
+//        
+//    } catch (err){
+//     
+//    }
+//})
 
 
 

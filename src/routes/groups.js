@@ -8,7 +8,7 @@ const uuid = require('uuid').v4;
 const pool = require('../database');
 
 const storage = multer.diskStorage({
-    destination: path.join(__dirname, 'public/img/uploads'), 
+    destination: path.join(__dirname, '../public/img/uploads'), 
     filename: (req,file,cb, filename) => {
         cb(null, uuid() + path.extname(file.originalname));
     }
@@ -54,17 +54,17 @@ router.put('/delete', async (req, res) => {
 });
 
 router.put('/edit', upload, async (req, res) => {
-    const { idUsuario, NombreGrupo, FechaFundacion, Apostolado, Descripcion} = req.body;
+    const { idGrupo, NombreGrupo, Apostolado, Descripcion} = req.body;
     const  Imagen = req.file.filename;
     console.log(Imagen)
     try{
-        const rows = await pool.query('CALL MiPalestra.spEditGroup(?,?,?,?,?,?)', [idUsuario, NombreGrupo, FechaFundacion, Apostolado, Descripcion, Imagen]);
+        await pool.query('CALL MiPalestra.spEditGrupo(?,?,?,?,?)', [idGrupo, NombreGrupo,  Apostolado, Descripcion, Imagen]);
+        res.send('Grupo modificado satisfactoriamente');
     } catch (err){
-        console.error(err);
+        console.error('Error al modificar grupo', err);
         
-        res.send('Error al eliminar el usuario');
+        res.send('Error al modificar grupo');
     }
-    res.send('Grupo modificado satisfactoriamente');
 });
 
 router.put('/editcomision', async (req, res) => {
@@ -109,6 +109,18 @@ router.put('/end/comision', async (req, res) => {
     } catch (err){
         console.log(err);
         res.send('Hubo un error')
+    }
+});
+
+router.get('/edit/:id', async (req, res) => {
+    const idGrupo = req.params.id;
+    try{
+        const row = await pool.query('CALL MiPalestra.spGetEditGrupo(?)', [idGrupo]);
+        const grupo = Object.values(JSON.parse(JSON.stringify(row)))[0][0];
+        res.send(grupo);
+    } catch(err){
+        console.log('Error al cargar grupo de edit: ', err);
+        res.send('Error al cargar grupo');
     }
 })
 

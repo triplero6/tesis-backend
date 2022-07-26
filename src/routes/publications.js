@@ -135,6 +135,29 @@ router.get('/novedades/:id', async (req, res) => {
             errors: 'Error al cargar novedad'
         });
     }
-})
+});
+
+router.put('/edit', async (req, res) => {
+    const { idPublicacion, Titulo, Cuerpo } = req.body;
+    try{
+        await pool.query('CALL MiPalestra.spEditPublicacion(?,?,?)', [idPublicacion, Titulo, Cuerpo]);
+        res.send('Publicacion editada correctamente');
+    } catch(err){
+        console.log('Error editar publicacion: ', err);
+        res.send('Error editar publicacion');
+    }
+});
+
+router.get('/edit/:id', async (req, res) => {
+    const idPublicacion = req.params.id;
+    try{
+        const row = await pool.query('CALL MiPalestra.spGetEditPublicacion(?)', [idPublicacion]);
+        const publicacion = Object.values(JSON.parse(JSON.stringify(row)))[0][0];
+        res.send(publicacion);
+    } catch(err){
+        console.log('Error al cargar publicacion de edit: ', err);
+        res.send('Error al cargar publicacion');
+    }
+});
 
 module.exports = router;
