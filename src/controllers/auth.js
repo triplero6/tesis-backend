@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const pool = require('../database');
 const helpers = require('../lib/helpers');
 const { connect } = require('../routes');
+const { query } = require('express');
 
 
 
@@ -45,7 +46,7 @@ exports.registerController = async (req, res) => {
                       })
                   } else{
                     const insertId =  Object.values(JSON.parse(JSON.stringify(rows)))[2][0].insertId;
-                    connection.query("CALL MiPalestra.spUserInGroup(?,?);CALL MiPalestra.spUserInGroup(?,'Palestra');", 
+                    connection.query("CALL MiPalestra.spUserInGroup(?,?);CALL MiPalestra.spUserInGroup(?,1);", 
                     [insertId, Comunidad, insertId],
                     function(err, rows){
                       if(err){
@@ -149,7 +150,12 @@ exports.signinController = async (req, res) => {
       const rows = await pool.query('CALL MiPalestra.spLogIn(?)', [username]);
       if(rows[0].length > 0){
           const user = rows[0][0];
-          console.log(user)
+          if(user.EstadoUsuario !== 1){
+            console.log(user.EstadoUsuario)
+            return res.status(422).json({
+              errors: 'El usuario no esta activo en el sistema'
+            });
+          }
           const validPassword = await helpers.matchPassword(password, user.Contrasenia); 
           console.log(validPassword)         
           if(validPassword){
@@ -214,9 +220,10 @@ exports.adminMiddleware = (req, res, next) => {
   });
 };
 
-exports.forgotPasswordController = (req, res) => {
+exports.forgotPasswordController = async (req, res) => {
   const { email } = req.body;
   const errors = validationResult(req);
+  console.log(email);
 
   if (!errors.isEmpty()) {
     const firstError = errors.array().map(error => error.msg)[0];
@@ -224,78 +231,44 @@ exports.forgotPasswordController = (req, res) => {
       errors: firstError
     });
   } else {
-    User.findOne(
-      {
-        email
-      },
-      (err, user) => {
-        if (err || !user) {
-          return res.status(400).json({
-            error: 'User with that email does not exist'
-          });
-        }
-
+    try{
+      const row = await pool.query('CALL MiPalestra.spForgetPassword(?)', [email]);
+      const user = Object.values(JSON.parse(JSON.stringify(row)))[0][0];
+      if(user){
         const token = jwt.sign(
           {
-            _id: user._id
+            _id: user.idUsuario
           },
           process.env.JWT_RESET_PASSWORD,
           {
-            expiresIn: '10m'
+            expiresIn: '30m'
           }
         );
+        await pool.query('CALL MiPalestra.spAddResetPasswordLink(?,?)', [user.idUsuario, token]);
+        helpers.resetPasswordMail(email, token, user.Nombre);
+        res.json({
+          message: `Se envio un correo a ${email}, con las instrucciones para cambiar la contraseña`
+        });
 
-        const emailData = {
-          from: process.env.EMAIL_FROM,
-          to: email,
-          subject: `Password Reset link`,
-          html: `
-                    <h1>Please use the following link to reset your password</h1>
-                    <p>${process.env.CLIENT_URL}/users/password/reset/${token}</p>
-                    <hr />
-                    <p>This email may contain sensetive information</p>
-                    <p>${process.env.CLIENT_URL}</p>
-                `
-        };
-
-        return user.updateOne(
-          {
-            resetPasswordLink: token
-          },
-          (err, success) => {
-            if (err) {
-              console.log('RESET PASSWORD LINK ERROR', err);
-              return res.status(400).json({
-                error:
-                  'Database connection error on user password forgot request'
-              });
-            } else {
-              sgMail
-                .send(emailData)
-                .then(sent => {
-                  // console.log('SIGNUP EMAIL SENT', sent)
-                  return res.json({
-                    message: `Email has been sent to ${email}. Follow the instruction to activate your account`
-                  });
-                })
-                .catch(err => {
-                  // console.log('SIGNUP EMAIL SENT ERROR', err)
-                  return res.json({
-                    message: err.message
-                  });
-                });
-            }
-          }
-        );
+      } else {
+        return res.status(400).json({
+          error: 'No existe un usuario con esa dirección de Correo'
+        });
       }
-    );
-  }
+    } catch(err){
+      console.log('Error al recuperar contraseña', err);
+      return res.status(422).json({
+        errors: 'Error al recuperar contraseña'
+      })
+    }}
 };
 
-exports.resetPasswordController = (req, res) => {
+exports.resetPasswordController = async (req, res) => {
   const { resetPasswordLink, newPassword } = req.body;
+  console.log(resetPasswordLink, newPassword)
 
   const errors = validationResult(req);
+
 
   if (!errors.isEmpty()) {
     const firstError = errors.array().map(error => error.msg)[0];
@@ -313,39 +286,28 @@ exports.resetPasswordController = (req, res) => {
             error: 'Expired link. Try again'
           });
         }
-
-        User.findOne(
-          {
-            resetPasswordLink
-          },
-          (err, user) => {
-            if (err || !user) {
-              return res.status(400).json({
-                error: 'Something went wrong. Try later'
-              });
-            }
-
-            const updatedFields = {
-              password: newPassword,
-              resetPasswordLink: ''
-            };
-
-            user = _.extend(user, updatedFields);
-
-            user.save((err, result) => {
-              if (err) {
-                return res.status(400).json({
-                  error: 'Error resetting user password'
-                });
-              }
-              res.json({
-                message: `Great! Now you can login with your new password`
-              });
-            });
-          }
-        );
+      })
+    }    
+    try{
+        const row = await pool.query('CALL MiPalestra.spResetPasswordLink(?)', [resetPasswordLink]);
+        const user = Object.values(JSON.parse(JSON.stringify(row)))[0][0];
+        if(user){
+          const resetPassword = await helpers.encryptPassword(newPassword)
+          console.log(resetPassword)
+          await pool.query('CALL MiPalestra.spResetPassword(?,?)', [user.idUsuario, resetPassword]);
+          res.json({
+            message: `Se reseteo correctamente la contraseña de ${user.Nombre}`
+          });
+        } else{
+          res.status(422).json({
+            errors: 'No existe un usuario asociado a ese link.'
+          });
+        }
+    } catch (err){
+      console.log('Error en Reset Password Link', err);
+      res.status(422).json({
+        errors: 'Error en link de reset'
       });
-    }
-  }
-};
+    }    
+  }};
 

@@ -793,3 +793,48 @@ CREATE PROCEDURE spEditGrupo(
     Descripcion = inDescripcion, Imagen = inImagen;
 END $$
 DELIMITER ;
+
+DELIMTER $$
+CREATE PROCEDURE spForgetPassword(
+    IN inMail VARCHAR(45) 
+)
+BEGIN
+    SELECT idUsuario, CONCAT_WS(', ', Apellido, Nombre) AS Nombre FROM Usuarios WHERE Mail = inMail;
+END $$
+DELIMITER;
+
+DELIMITER $$
+CREATE PROCEDURE spResetPasswordLink(
+    IN inResetPasswordLink VARCHAR(200) 
+)
+BEGIN
+    SELECT idUsuario, CONCAT_WS(', ', Apellido, Nombre) AS Nombre FROM Usuarios WHERE ResetPasswordLink = inResetPasswordLink;
+END $$
+DELIMITER;
+
+DELIMITER $$
+CREATE PROCEDURE spAddResetPasswordLink(
+    IN inidUsuario INT,
+    IN inResetPasswordLink VARCHAR(200)
+)
+BEGIN
+    UPDATE Usuarios SET ResetPasswordLink = inResetPasswordLink WHERE idUsuario = inidUsuario;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spResetPassword(
+    IN inidUsuario INT,
+    IN inNewPassword VARCHAR(200)
+)
+BEGIN 
+    UPDATE Usuarios SET Contrasenia = inNewPassword WHERE idUsuario = inidUsuario;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spListComunidades()
+BEGIN 
+    SELECT idGrupo, NombreGrupo FROM Grupos WHERE idTipoGrupo = 1 OR idTipoGrupo = 2 OR idTipoGrupo = 3;
+END $$
+DELIMTER ;

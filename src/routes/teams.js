@@ -77,6 +77,7 @@ router.post('/add', async (req, res) => {
 
 router.put('/edit', async (req, res) => {
     const {idEquipo, idTipoEquipo, Descripcion, Lugar, NombreCasa, dirigente, idAsesor, FechaDesde, FechaHasta} = req.body;
+    console.log(FechaDesde, FechaHasta)
     const newFechaDesde = helpers.formatSQL(FechaDesde);
     const newFechaHasta = helpers.formatSQL(FechaHasta);
     pool.getConnection(function(err, connection){

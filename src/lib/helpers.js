@@ -62,11 +62,11 @@ helpers.sendWelcomeMail = async (mail) => {
 
 }
 
-helpers.resetPasswordMail = async (mail, token) => {
+helpers.resetPasswordMail = async (mail, token, nombre) => {
 
     contentHTML = `
-        <h1>Usa el siguiente enlace para cambiar tu contraseña</h1>
-        <p><a href="${process.env.CLIENT_URL}/password/reset/${token}"><<h3>Cambiar tu contraseña</h3></a></br>
+        <h1>Hola ${nombre}. Usa el siguiente enlace para cambiar tu contraseña</h1>
+        <p><a href="${process.env.CLIENT_URL}/restablecer/${token}"><h3>Cambiar tu contraseña</h3></a></br>
         No compartas este mail, ya que contiene informacion sensible.
         </p>
     `;
@@ -91,6 +91,5 @@ helpers.resetPasswordMail = async (mail, token) => {
     });
     console.log('Message sent: %s', info.messageId);
 }
-
 
 module.exports = helpers;

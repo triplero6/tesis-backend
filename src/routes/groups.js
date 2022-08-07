@@ -23,10 +23,28 @@ router.get('/', async (req,res) => {
     res.send(groups);
 });
 
+router.get('/one/:id', async(req, res) => {
+    const idGrupo = req.params.id;
+    try{
+        const row = await pool.query('CALL MiPalestra.spGetGrupo(?)', [idGrupo]);
+        const grupo = Object.values(JSON.parse(JSON.stringify(row)))[0][0];
+        res.send(grupo);
+    } catch (err){
+        console.log('Error al cargar grupo: ', err)
+        res.send('Error al cargar el grupo');
+    }
+});
+
 router.get('/comisiones', async (req, res) => {
     const rows = await pool.query('CALL MiPalestra.spListComisiones()');
     const comisiones = Object.values(JSON.parse(JSON.stringify(rows)))[0];
     res.send(comisiones);
+});
+
+router.get('/comunidades', async (req, res) => {
+    const rows = await pool.query('CALL MiPalestra.spListComunidades()');
+    const comunidades = Object.values(JSON.parse(JSON.stringify(rows)))[0];
+    res.send(comunidades);
 });
 
 router.post('/nuevo', async (req, res) => {
@@ -55,8 +73,11 @@ router.put('/delete', async (req, res) => {
 
 router.put('/edit', upload, async (req, res) => {
     const { idGrupo, NombreGrupo, Apostolado, Descripcion} = req.body;
-    const  Imagen = req.file.filename;
-    console.log(Imagen)
+    let Imagen = null;
+    if (req.file){
+        Imagen = req.file.filename;
+        console.log(Imagen)
+    }
     try{
         await pool.query('CALL MiPalestra.spEditGrupo(?,?,?,?,?)', [idGrupo, NombreGrupo,  Apostolado, Descripcion, Imagen]);
         res.send('Grupo modificado satisfactoriamente');
