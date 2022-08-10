@@ -279,6 +279,19 @@ router.get('/groupsroles/:id', async (req, res) => {
 //    }
 //})
 
+router.get('/generalrol/:id', async (req, res) => {
+    const idUsuario = req.params.id;
+    console.log(idUsuario);
+    try{
+        const row = await pool.query('CALL MiPalestra.spRolGeneral(?)', [idUsuario]);
+        const rol = Object.values(JSON.parse(JSON.stringify(row)))[0][0];
+        res.send(rol)
+    }catch(err){
+        console.log('Error al cargar roles generales', err);
+        res.send('Error al cargar roles generales');
+    }
+})
+
 
 
 module.exports = router;

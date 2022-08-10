@@ -54,6 +54,7 @@ router.post('/nuevo', async (req, res) => {
         FechaFundacion,
         "YYYY-MM-DDTHH:mm:ss"
     );
+    console.log(FechaFundacion)
     let newFechaFundacion = date.format("YYYY-MM-DD HH:mm:ss");
     const rows = await pool.query('CALL MiPalestra.spAddGroup(?,?,?,?,?)', [idTipoGrupo, NombreGrupo, newFechaFundacion, Apostolado, Descripcion]);
     console.log(rows);
@@ -76,7 +77,6 @@ router.put('/edit', upload, async (req, res) => {
     let Imagen = null;
     if (req.file){
         Imagen = req.file.filename;
-        console.log(Imagen)
     }
     try{
         await pool.query('CALL MiPalestra.spEditGrupo(?,?,?,?,?)', [idGrupo, NombreGrupo,  Apostolado, Descripcion, Imagen]);

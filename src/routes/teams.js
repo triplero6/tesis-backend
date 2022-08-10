@@ -1,9 +1,22 @@
 const express = require('express');
 const router = express.Router();
-
+const moment = require('moment');
 const pool = require('../database');
 const { resetPasswordMail } = require('../lib/helpers');
 const helpers = require('../lib/helpers');
+const multer = require('multer');
+const path = require('path');
+const uuid = require('uuid').v4;
+
+const storage = multer.diskStorage({
+    destination: path.join(__dirname, '../public/img/uploads'), 
+    filename: (req,file,cb, filename) => {
+        cb(null, uuid() + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ storage }).single('FichaEvaluacion');
+
 
 router.get('/', async (req,res) => {
     const rows = await pool.query('CALL MiPalestra.spListEquipos()');
@@ -296,6 +309,33 @@ router.get('/select/:id', async (req, res) => {
         res.send(equipos);w
     }catch (err){
         console.log(err);
+    }
+});
+
+router.post('/evaluations', upload, async (req, res) =>{
+    const {idEquipo, idTipoEquipo} = req.body;
+    const FichaEvaluacion = req.file.filename;
+    console.log(idEquipo, idTipoEquipo,  FichaEvaluacion)
+
+    try{
+        await pool.query('CALL MiPalestra.spAddEvaluationTeam(?,?,?);', [idEquipo, idTipoEquipo, FichaEvaluacion]);
+        res.send('Evaluación cargada correctamente');
+    } catch(err){
+        console.log('Error al cargar evaluacion: ', err);
+        res.send('Error al cargar la evaluacion')
+    }
+});
+
+router.put('/evaluations', upload, async (req, res) => {
+    const {idEvaluacionEquipo} = req.body;
+    const FichaEvaluacion = req.file.filename;
+
+    try{
+        await pool.query('CALL MiPalestra.spEditEvaluationTeam(?,?)', [idEvaluacionEquipo, FichaEvaluacion]);
+        res.send('Evaluación actualizada correctamente');
+    } catch(err){
+        console.log('Error al editar evaluación', err);
+        res.send('Error al editar evaluacion');
     }
 })
 

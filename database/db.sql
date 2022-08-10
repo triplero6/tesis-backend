@@ -838,3 +838,44 @@ BEGIN
     SELECT idGrupo, NombreGrupo FROM Grupos WHERE idTipoGrupo = 1 OR idTipoGrupo = 2 OR idTipoGrupo = 3;
 END $$
 DELIMTER ;
+
+DELIMITER $$
+CREATE PROCEDURE spGetGrupo(
+    IN inidGrupo INT
+)
+BEGIN
+    SELECT idGrupo, NombreGrupo, Imagen FROM Grupos WHERE idGrupo = inidGrupo;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spAddEvaluationTeam(
+    IN inidEquipo INT,
+    IN inidTipoEquipo INT,
+    IN inFichaEvaluacion VARCHAR(200)
+)
+BEGIN
+    INSERT INTO EvaluacionesDeEquipos(idEquipo, idTipoEquipo, FechaEvaluacion, FichaEvaluacion)
+    VALUES (inidEquipo, inidTipoEquipo, CURDATE(), inFichaEvaluacion);
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spEditEvaluationTeam(
+    IN inidEvaluacionEquipo INT,
+    IN inFichaEvaluacion VARCHAR(200)
+)
+BEGIN
+    UPDATE EvaluacionesDeEquipos SET FichaEvaluacion = inFichaEvaluacion, FechaEvaluacion = CURDATE() 
+    WHERE idEvaluacionEquipo = inidEvaluacionEquipo;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE spRolGeneral(
+    IN inidUsuario INT
+)
+BEGIN
+    SELECT * FROM UsuariosEnGrupos WHERE idUsuario = inidUsuario AND idGrupo = 1;
+END $$
+DELIMITER ;
