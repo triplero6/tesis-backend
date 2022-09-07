@@ -101,6 +101,7 @@ router.put('/editcomision', async (req, res) => {
 
 router.post('/add/comision', async (req, res) => {
     const {idUsuario, Grupo, Rol} = req.body;
+    console.log(Rol);
     try{
         await pool.query('CALL MiPalestra.spAddComision(?,?,?)', [idUsuario, Grupo, Rol]);
         res.send('Comision agregada satisfactoriamente');

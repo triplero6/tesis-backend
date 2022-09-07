@@ -20,9 +20,9 @@ const upload = multer({ storage }).single('Perfil');
 
 router.put('/edit', async (req,res) => {
     const { idUsuario, Nombre, Apellido, Mail, Rol} = req.body;
-    
+    console.log(idUsuario, Nombre, Apellido, Mail, Rol)
     try{
-        await pool.query('CALL MiPalestra.spEditUser(?,?,?,?)', [idUsuario, Nombre, Apellido, Mail]);
+        await pool.query('CALL MiPalestra.spEditUser(?,?,?,?,?)', [idUsuario, Nombre, Apellido, Mail, Rol]);
         res.send('Perfil actualizado');
 
     } catch (err){
