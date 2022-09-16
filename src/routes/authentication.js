@@ -36,7 +36,7 @@ const { isLoggedIn, isNotLoggedIn } = require('../lib/auth');
 router.post('/register',
     registerController);
 
-router.post('/login', validLogin, signinController);
+router.post('/login',  signinController);
 
 router.post('/activation', activationController)
 

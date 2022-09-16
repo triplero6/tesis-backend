@@ -121,21 +121,29 @@ router.put('/edit', async (req, res) => {
                                 var query = '';
                                 var variables = [];
 
+                                if(!(dirigente.length === 0)){
+                                    
                                 dirigente.map((integrante) => {
                                     query += `CALL MiPalestra.spAddUserInTeam(?,?,?,?,?);`
                                     variables.push(integrante.idUsuario, idEquipo, integrante.rol, newFechaDesde, newFechaHasta);
                                 })
+                            }
                                 console.log(query, variables)
-                                connection.query(query, variables,
-                                    function(err, results){
-                                        if(err){
-                                            console.log(err)
-                                            connection.rollback(function(){
-                                                connection.release();
-                                                res.send('Error al editar el equipo');
-                                            })
-                                        }
-                                    })
+                                if(query !== ''){
+                                    console.log('entra aca')
+                                    connection.query(query, variables,
+                                        function(err, results){
+                                            if(err){
+                                                console.log(err, 'aca es')
+                                                connection.rollback(function(){
+                                                    connection.release();
+                                                    res.send('Error al editar el equipo');
+                                                })
+                                            }
+                                        })
+                                } else {
+                                    console.log('no entra')
+                                }
                             }
                         })
                         
